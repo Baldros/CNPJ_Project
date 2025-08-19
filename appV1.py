@@ -6,7 +6,7 @@ Código de construção do app para busca de CNPJs por bairro.
 # Dependências:
 import streamlit as st
 import pandas as pd
-from support_functions import search_engine_pandas
+from support_functions import search_engine_pandas, list_files
 
 # ---------- Estado ----------
 st.session_state.setdefault("result_df", None)
@@ -19,10 +19,19 @@ st.title("🔎 Buscador de CNPJ por Endereço")
 # ---------- Aquisitando dados ----------
 with st.spinner("Carregando dados..."):
     try:
-        df = pd.read_csv("CNPJs_RJ_Ativos.csv", sep=";", low_memory=False)
-        bairros = df["BAIRRO"].unique()
+        files = list_files("Dataframes", ".csv")
+        df = pd.DataFrame()
+        
+        for file in files:
+            df_temp = pd.read_csv(file, sep=";", low_memory=False)
+            df = pd.concat([df, df_temp], ignore_index=True)
+
+        if df is not None:
+            bairros = df["BAIRRO"].unique()
+        else:
+            st.error("Não foi possível carregar os dados do arquivo.")
     except Exception as e:
-        st.error(f"Erro ao carregar os dados: {e}")
+        st.error(f"Erro ao processar os dados: {e}")
         df = None
 
 # ---------- Campo de texto e botão ----------
@@ -76,8 +85,9 @@ if st.session_state["result_df"] is not None:
             df_logradouro["CNPJ DV"].astype(str).str.zfill(2)            # Preencher com zeros à esquerda
         )
         df_logradouro = df_logradouro.drop_duplicates(subset=["CNPJ"]) # Remover duplicatas baseadas no CNPJ
-        df_logradouro.sort_values(by=["NÚMERO"], inplace=True) # Ordenando valores por número
-        df_logradouro.fillna("Não informado", inplace=True)  # Preencher NaN com string vazia
+        df_logradouro = df_logradouro.sort_values(by=["NÚMERO"]) # Ordenando valores por número
+        df_logradouro = df_logradouro.fillna("Não informado")  # Preencher NaN com string vazia
+        
         # Selecionar as colunas para exibição
         with st.expander(f"Logradouro: {logradouro}"):
             st.dataframe(df_logradouro[[

@@ -36,7 +36,7 @@ with st.spinner("Carregando dados..."):
 
 # ---------- Campo de texto e botão ----------
 if df is not None:
-    query = st.text_input("Digite o termo para buscar:")
+    query = st.text_input("Digite o bairro para buscar:")
 else:
     st.warning("Os dados ainda não foram carregados ou ocorreu um erro.")
 
@@ -93,3 +93,4 @@ if st.session_state["result_df"] is not None:
             st.dataframe(df_logradouro[[
                 "CNPJ", "CORREIO ELETRÔNICO","TIPO DE LOGRADOURO", "LOGRADOURO", "BAIRRO", "NÚMERO", "COMPLEMENTO",
             ]].astype(str))
+
